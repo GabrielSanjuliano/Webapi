@@ -1,58 +1,45 @@
 import { Popover } from "@headlessui/react";
-import axios from "axios";
 import { CaretDown, Coffee } from "phosphor-react";
 import React, { useState } from "react";
+import { getClients } from "./helpers/getClients";
 
-const Pop: React.FC = () => {
+interface Props {
+  setClients: (value: any[]) => void;
+}
+
+const Pop: React.FC<Props> = ({ setClients }) => {
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
-  const [sex, setSex] = useState(1);
+  const [sex, setSex] = useState(0);
 
   async function saveClient() {
-    axios
-      .post(
-        "https://facec-webapi-2022.herokuapp.com/clientes",
-        JSON.stringify({
-          nome: name,
-          docuumento: cpf,
-          sexo: sex,
-        })
-      )
-      .then((res) => {
-        console.log("DEU CERTO", res);
+    let headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    console.log(headers);
+
+    const res = await fetch(
+      "https://facec-webapi-2022.herokuapp.com/clientes",
+      {
+        headers,
+        cache: "no-cache",
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify({ nome: name, documento: cpf, sexo: sex }),
+      }
+    )
+      .then(function (response) {
+        if (response.ok) {
+          return response.json();
+        }
+        return Promise.reject(response);
       })
-      .catch((err) => {
-        console.log("DEU ERRADO", err);
+      .then(function (data) {
+        getClients(setClients);
+      })
+      .catch(function (error) {
+        console.warn("Something went wrong.", error);
       });
-    // const res = await fetch(
-    //   "https://facec-webapi-2022.herokuapp.com/clientes",
-    //   {
-    //     cache: "no-cache",
-    //     method: "POST",
-    //     mode: "no-cors",
-    //     body: JSON.stringify({ nome: name, documento: cpf, sexo: sex }),
-    //   }
-    // )
-    //   .then(function (response) {
-    //     if (response.ok) {
-    //       return response.json();
-    //     }
-    //     return Promise.reject(response);
-    //   })
-    //   .then(function (data) {
-    //     console.log(data);
-    //   })
-    //   .catch(function (error) {
-    //     console.warn("Something went wrong.", error);
-    //   });
-    // console.log(res);
-    // .then(function (res) {
-    //   console.log(res);
-    //   return res.json();
-    // })
-    // .then((data) => {
-    //   console.log(">>>>>>>>>>>>>>>>>>>>>>>>>", data);
-    // });
+    console.log(res);
   }
 
   return (
